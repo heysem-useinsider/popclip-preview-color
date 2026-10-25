@@ -3,6 +3,8 @@
 	"identifier": "com.github.mohaka.popclip.extension.color-preview",
 	"description": "Show a swatch of the selected CSS or platform color. Hover it for buttons that copy the color in other formats; Option-click a button to replace the color in place.",
 	"icon": "symbol:paintpalette",
+	"keywords": "color colour swatch preview hex rgb hsl oklch css tailwind swiftui uikit flutter compose android contrast",
+	"popclipVersion": 6221,
 	"module": "color.js",
 	"entitlements": ["dynamic"],
 	"options": [

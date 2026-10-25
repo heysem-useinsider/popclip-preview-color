@@ -1,4 +1,4 @@
-// run with `/Applications/PopClip.app/Contents/MacOS/PopClip run test.js`
+// run with `/Applications/PopClip.app/Contents/MacOS/PopClip run _test.js`
 const { test } = require("./color");
 
 const describe = (color, options) => test.details(color, options).map((button) => button.title).join("  ·  ");
