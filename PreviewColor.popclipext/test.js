@@ -568,4 +568,74 @@ check(
 	JSON.stringify(openClicks),
 );
 
+const tailwindOn = { tailwindClasses: true };
+const tailwindInputCases = [
+	["sky-500", "#00a6f4", "tailwind"],
+	["bg-sky-500", "#00a6f4", "tailwind"],
+	["text-red-600", "#e7000b", "tailwind"],
+	["Bg-Sky-500", "#00a6f4", "tailwind"],
+	["bg-sky-500;", "#00a6f4", "tailwind"],
+	["--color-sky-500", "#00a6f4", "tailwind"],
+	["var(--color-sky-500)", "#00a6f4", "tailwind"],
+	["var(--color-sky-500", "#00a6f4", "tailwind"],
+	["bg-sky-500/50", "#00a6f480", "tailwind"],
+	["bg-sky-500/[35%]", "#00a6f459", "tailwind"],
+	["bg-sky-500/[0.35]", "#00a6f459", "tailwind"],
+	["hover:bg-sky-500", "#00a6f4", "tailwind"],
+	["md:dark:hover:!text-sky-500", "#00a6f4", "tailwind"],
+	["bg-sky-500!", "#00a6f4", "tailwind"],
+	["ring-offset-red-500", "#fb2c36", "tailwind"],
+	["border-x-red-500", "#fb2c36", "tailwind"],
+	["from-emerald-400", "#00d492", "tailwind"],
+	["bg-transparent", "#00000000", "tailwind"],
+	["text-white", "#ffffff", "tailwind"],
+	["bg-[#1f9add]", "#1f9add", "hex"],
+	["bg-[rgb(0_128_255)]", "#0080ff", "rgb"],
+	["text-[oklch(60%_0.2_250)]", "#0081f1", "oklch"],
+	["bg-sky-501", null, null],
+	["bg-[url(x)]", null, null],
+	["[#fff]", null, null],
+	["sky", null, null],
+	["bg-sky-500/abc", null, null],
+	["text-lg", null, null],
+	["bg-sky-500 text-red-600", null, null],
+	["--color-sky", null, null],
+];
+
+tailwindInputCases.forEach(([text, hex, format]) => {
+	const color = test.parse(text, tailwindOn);
+	const result = color ? `${color.hex} ${color.format}` : null;
+	check(`tailwind in ${JSON.stringify(text)}`, result === (hex && `${hex} ${format}`), result);
+});
+check("tailwind classes off", test.parse("bg-sky-500", { tailwindClasses: false }) === null, "null expected");
+check("plain CSS names still win", test.parse("white", tailwindOn).format === "name", test.parse("white", tailwindOn).format);
+check(
+	"tailwind input hides its button",
+	describe(test.parse("bg-sky-500", tailwindOn), { tailwind: true, hex: true }) === "#00a6f4",
+	describe(test.parse("bg-sky-500", tailwindOn), { tailwind: true, hex: true }),
+);
+check(
+	"tailwind input with opacity",
+	describe(test.parse("bg-sky-500/50", tailwindOn), { tailwind: true, rgb: true }) === "rgb(0 166 244 / 50%)",
+	describe(test.parse("bg-sky-500/50", tailwindOn), { tailwind: true, rgb: true }),
+);
+
+const tailwindMulti = { multiple: true, tailwindClasses: true };
+const tailwindMultiCases = [
+	['<div class="bg-sky-500 text-white hover:bg-sky-600/80 p-4">', ["#00a6f4", "#ffffff", "#0084d1cc"]],
+	['className="flex border-x-red-500 ring-[#1f9add] text-lg"', ["#fb2c36", "#1f9add"]],
+	["--color-brand: var(--color-sky-500);", ["#00a6f4"]],
+	["@theme { --color-primary-500: oklch(68.5% 0.169 237.323); }", ["#00a6f4"]],
+	["the background was text-ish", []],
+];
+tailwindMultiCases.forEach(([text, expect]) => {
+	const hexes = test.findColors(text, tailwindMulti).map((color) => color.hex);
+	check(`tailwind multi ${JSON.stringify(text)}`, JSON.stringify(hexes) === JSON.stringify(expect), JSON.stringify(hexes));
+});
+check(
+	"tailwind multi off",
+	JSON.stringify(test.findColors('<div class="bg-sky-500 text-white">', { multiple: true }).map((color) => color.hex)) === "[]",
+	JSON.stringify(test.findColors('<div class="bg-sky-500 text-white">', { multiple: true }).map((color) => color.hex)),
+);
+
 print(`${fail ? "FAILED" : "PASSED"}`);

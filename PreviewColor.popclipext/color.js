@@ -340,7 +340,56 @@ const parsePlatform = (text) => {
 	return null;
 };
 
-const toSource = (text, { bareHex = false, bareRgb = false, platformCode = false } = {}) => {
+const TAILWIND_BY_NAME = new Map(TAILWIND_COLORS);
+const TAILWIND_UTILITIES =
+	"bg|text|border(?:-[xytrblse])?|outline|ring(?:-offset)?|inset-ring|divide|fill|stroke|from|via|to|" +
+	"shadow|inset-shadow|drop-shadow|text-shadow|accent|caret|decoration|placeholder";
+const TAILWIND_CLASS = new RegExp(
+	`^(?:[a-z0-9-]+:)*!?(?:(${TAILWIND_UTILITIES})-)?([a-z]+(?:-\\d+)?|\\[[^\\]]+\\])(?:/(\\d+|\\[[^\\]]+\\]))?!?$`,
+);
+const TAILWIND_VARIABLE = /^(?:var\(\s*)?--color-([a-z]+(?:-\d+)?)\s*\)?$/;
+
+const tailwindOpacity = (text) => {
+	if (text === undefined) {
+		return 1;
+	}
+	const value = text.startsWith("[") ? text.slice(1, -1) : `${text}%`;
+	return value.endsWith("%") ? parseFloat(value) / 100 : parseFloat(value);
+};
+
+const tailwindColor = (name) => {
+	if (name === "transparent") {
+		return { xyz: [0, 0, 0], a: 0 };
+	}
+	const value = TAILWIND_BY_NAME.get(name);
+	return value ? toSource(value) : null;
+};
+
+const parseTailwind = (text) => {
+	const variable = TAILWIND_VARIABLE.exec(text);
+	if (variable) {
+		const color = tailwindColor(variable[1]);
+		return color && { ...color, format: "tailwind" };
+	}
+	const match = TAILWIND_CLASS.exec(text);
+	if (!match) {
+		return null;
+	}
+	const [, utility, value, opacity] = match;
+	const arbitrary = value.startsWith("[");
+	if (arbitrary && !utility) {
+		return null;
+	}
+	const inner = arbitrary ? value.slice(1, -1).replace(/_/g, " ") : null;
+	const color = arbitrary ? toSource(inner) : tailwindColor(value);
+	const alpha = tailwindOpacity(opacity);
+	if (!color || !Number.isFinite(alpha)) {
+		return null;
+	}
+	return { ...color, a: color.a * clamp(alpha, 0, 1), format: arbitrary ? inputFormat(inner) : "tailwind" };
+};
+
+const toSource = (text, { bareHex = false, bareRgb = false, platformCode = false, tailwindClasses = false } = {}) => {
 	if (text === "transparent") {
 		return { xyz: [0, 0, 0], a: 0 };
 	}
@@ -358,6 +407,10 @@ const toSource = (text, { bareHex = false, bareRgb = false, platformCode = false
 	const platform = platformCode ? parsePlatform(text) : null;
 	if (platform) {
 		return platform;
+	}
+	const tailwind = tailwindClasses ? parseTailwind(text) : null;
+	if (tailwind) {
+		return tailwind;
 	}
 	const fn = FUNCTION_COLOR.exec(text);
 	return fn ? parseFunction(fn[1], fn[2]) : null;
@@ -700,12 +753,24 @@ const PLATFORM_CANDIDATES = [
 	/#colorliteral\([^()]*(?:\)|$)/gi,
 	/\b0x[0-9a-f]{8}\b/gi,
 ];
+const TAILWIND_CANDIDATES = [
+	new RegExp(
+		`(?<![\\w-])(?:[a-z0-9-]+:)*!?(?:${TAILWIND_UTILITIES})-(?:[a-z]+-\\d+|black|white|transparent|\\[[^\\]\\s]+\\])` +
+			"(?:/(?:\\d+|\\[[^\\]\\s]+\\]))?!?(?![\\w-])",
+		"gi",
+	),
+	/(?:var\(\s*)?--color-[a-z]+(?:-\d+)?(?:\s*\))?/gi,
+];
 const DECLARED_NAME = /(?:^|[;{\s])-?-?[a-z_][a-z0-9_-]*\s*:\s*([a-z]+)\s*(?:!important\s*)?(?=;|}|$)/gim;
 
 const findColors = (text, options) => {
 	const scanned = text.slice(0, SCAN_LIMIT);
 	const candidates = [];
-	const patterns = options.platformCode ? [...CSS_CANDIDATES, ...PLATFORM_CANDIDATES] : CSS_CANDIDATES;
+	const patterns = [
+		...CSS_CANDIDATES,
+		...(options.platformCode ? PLATFORM_CANDIDATES : []),
+		...(options.tailwindClasses ? TAILWIND_CANDIDATES : []),
+	];
 	for (const pattern of patterns) {
 		for (const match of scanned.matchAll(pattern)) {
 			candidates.push([match.index, match[0]]);

@@ -92,6 +92,13 @@
 			"defaultValue": true
 		},
 		{
+			"identifier": "tailwindClasses",
+			"type": "boolean",
+			"label": "Tailwind classes",
+			"description": "Like sky-500, hover:bg-sky-500/50, bg-[#1f9add] or var(--color-sky-500).",
+			"defaultValue": true
+		},
+		{
 			"identifier": "multiple",
 			"type": "boolean",
 			"label": "Several colors in one selection",
