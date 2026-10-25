@@ -440,7 +440,9 @@ const parse = (text, options = {}) => {
 		start += valueStart;
 		value = value.slice(valueStart, valueStart + declaration[1].length);
 	}
-	const input = value.toLowerCase();
+	const count = (pattern) => (value.match(pattern) || []).length;
+	const autoClosed = count(/\(/g) === count(/\)/g) + 1 && !value.endsWith(")");
+	const input = (autoClosed ? `${value})` : value).toLowerCase();
 	const source = toSource(input, options);
 	if (!source) {
 		return null;
@@ -464,6 +466,7 @@ const parse = (text, options = {}) => {
 		format: source.format || inputFormat(input),
 		text,
 		span: [start, start + value.length],
+		autoClosed,
 	};
 };
 
@@ -691,10 +694,10 @@ const details = (color, options) => {
 
 const MAX_COLORS = 6;
 const SCAN_LIMIT = 5000;
-const CSS_CANDIDATES = [/#[0-9a-f]{3,8}\b/gi, /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*\)/gi];
+const CSS_CANDIDATES = [/#[0-9a-f]{3,8}\b/gi, /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*(?:\)|$)/gi];
 const PLATFORM_CANDIDATES = [
-	/\b(?:ui|ns)?color(?:\.from(?:argb|rgbo)|\.a?rgb)?\([^()]*\)/gi,
-	/#colorliteral\([^()]*\)/gi,
+	/\b(?:ui|ns)?color(?:\.from(?:argb|rgbo)|\.a?rgb)?\([^()]*(?:\)|$)/gi,
+	/#colorliteral\([^()]*(?:\)|$)/gi,
 	/\b0x[0-9a-f]{8}\b/gi,
 ];
 const DECLARED_NAME = /(?:^|[;{\s])-?-?[a-z_][a-z0-9_-]*\s*:\s*([a-z]+)\s*(?:!important\s*)?(?=;|}|$)/gim;
@@ -746,7 +749,8 @@ const toAction = (button, color) => {
 	} else if (copy === undefined) {
 		action.code = () => popclip.showText(info);
 	} else {
-		action.code = () => (popclip.modifiers.option ? popclip.pasteText(replaceSpan(color, copy)) : popclip.copyText(copy));
+		action.code = () =>
+			popclip.modifiers.option && !color.autoClosed ? popclip.pasteText(replaceSpan(color, copy)) : popclip.copyText(copy);
 	}
 	return action;
 };

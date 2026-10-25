@@ -75,7 +75,7 @@ const hexCases = new Map([
 
 const rejectCases = [
 	"1f9add", "#1f9ad", "#ggg", "add", "#1f9add and more", "", "redd", "the red car", "currentcolor",
-	"rgb()", "rgb(255 0)", "rgb(255, 0, 0", "rgb(255, 0, 0 / 50%)", "rgb(255 0 0 /)", "rgb(255 0 0 / 50% / 1)",
+	"rgb()", "rgb(255 0)", "rgb(255, 0, 0 / 50%)", "rgb(255 0 0 /)", "rgb(255 0 0 / 50% / 1)",
 	"rgb(1px 0 0)", "hsl(0 100% 50% 50%)", "hsl(0% 100% 50%)", "lab(50%, 40, 30)", "oklch(60% 0.2)",
 	"color(foo 1 0 0)", "color(display-p3 1 0.5)", "red;;", ";", "#00ff00;x", ";red",
 ];
@@ -524,5 +524,48 @@ check("single wins over multi", test.actions({ text: "#f00" }, { multiple: true 
 const platformOff = test.findColors("x = Color(0xFF1F9ADD) y = #f00", { multiple: true }).map((color) => `${color.hex} ${color.span}`);
 check("multi platform off", JSON.stringify(platformOff) === JSON.stringify(["#ff0000 26,30"]), JSON.stringify(platformOff));
 check("multi hides each input format", describe(test.findColors("a: #f00; b: rgb(0 0 255)", multiOptions)[1], { hex: true, rgb: true }) === "#0000ff", describe(test.findColors("a: #f00; b: rgb(0 0 255)", multiOptions)[1], { hex: true, rgb: true }));
+
+const openCases = [
+	["rgb(0, 128, 255", {}, "#0080ff"],
+	["rgb(0 128 255 / 50%", {}, "#0080ff80"],
+	["  hsl(240, 100%, 50%  ", {}, "#0000ff"],
+	["oklch(60% 0.2 250", {}, "#0081f1"],
+	["color(display-p3 1 0.5 0", {}, "#ff7d00"],
+	["color: rgb(0, 128, 255", { cssDeclarations: true }, "#0080ff"],
+	["Color(0xFF1F9ADD", { platformCode: true }, "#1f9add"],
+	["UIColor(red: 1, green: 0, blue: 0, alpha: 1", { platformCode: true }, "#ff0000"],
+	["rgb(0, 128, 255)", {}, "#0080ff"],
+	["rgb(0, 128, 255))", {}, null],
+	["rgb((0, 128, 255", {}, null],
+	["rgb(0, 128", {}, null],
+	["rgb(", {}, null],
+];
+
+openCases.forEach(([text, options, expect]) => {
+	const color = test.parse(text, options);
+	const result = color ? color.hex : null;
+	check(`open paren ${JSON.stringify(text)}`, result === expect, result);
+});
+check("auto-closed flag", test.parse("rgb(0, 128, 255").autoClosed === true && test.parse("rgb(0, 128, 255)").autoClosed === false, "flag set only when closed for you");
+check("auto-closed hides its format", describe(test.parse("rgb(0, 128, 255"), { hex: true, rgb: true }) === "#0080ff", describe(test.parse("rgb(0, 128, 255"), { hex: true, rgb: true }));
+
+const openMulti = test.findColors("a { color: #f00; background: rgb(0, 128, 255", { multiple: true }).map((color) => `${color.hex} ${color.autoClosed}`);
+check("multi auto-closes the last color", JSON.stringify(openMulti) === JSON.stringify(["#ff0000 false", "#0080ff true"]), JSON.stringify(openMulti));
+
+const openClicks = [];
+globalThis.popclip = {
+	modifiers: { option: true },
+	copyText: (text) => openClicks.push(["copy", text]),
+	pasteText: (text) => openClicks.push(["paste", text]),
+	showText: (text) => openClicks.push(["show", text]),
+};
+test.actions({ text: "rgb(0, 128, 255" }, { hex: true })[0].submenu[0].code();
+test.actions({ text: "rgb(0, 128, 255)" }, { hex: true })[0].submenu[0].code();
+globalThis.popclip = realPopclip;
+check(
+	"option-click copies when the paren was missing",
+	JSON.stringify(openClicks) === JSON.stringify([["copy", "#0080ff"], ["paste", "#0080ff"]]),
+	JSON.stringify(openClicks),
+);
 
 print(`${fail ? "FAILED" : "PASSED"}`);
