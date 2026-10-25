@@ -1,6 +1,4 @@
-# PopClip Extensions
-
-## Preview Color
+# Preview Color
 
 Select a color and PopClip shows a swatch of it. Hover the swatch for a row of buttons; click one to copy that value, or Option-click to replace the color in place.
 
@@ -12,18 +10,18 @@ It recognizes:
 
 Buttons can show the closest name, the nearest Tailwind color, hex, RGB, HSL, OKLCH, Flutter / Compose, Android XML, SwiftUI, UIKit, WCAG contrast against white and black, and ten shades of the same hue. Pick them in PopClip's settings for the extension.
 
-### Install
+## Install
 
 Double-click `PreviewColor.popclipext`, or a built `PreviewColor.popclipextz`. The extension is unsigned, so PopClip asks for confirmation.
 
-### Test
+## Test
 
 ```sh
 cd PreviewColor.popclipext
 /Applications/PopClip.app/Contents/MacOS/PopClip run test.js
 ```
 
-### Build for sharing
+## Build for sharing
 
 ```sh
 ./build.sh
@@ -31,7 +29,7 @@ cd PreviewColor.popclipext
 
 This writes `PreviewColor.popclipextz` next to the extension, without the tests.
 
-### Credits
+## Credits
 
 - Color names: [color-name-list](https://github.com/meodai/color-names) 14.80.0 "best of" list, MIT, Copyright (c) 2017 David Aerne
 - Tailwind palette: [tailwindcss](https://github.com/tailwindlabs/tailwindcss) 4.3.3 `theme.css`, MIT, Copyright (c) Tailwind Labs, Inc.
