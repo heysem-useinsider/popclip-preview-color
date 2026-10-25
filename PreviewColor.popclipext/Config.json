@@ -1,108 +1,66 @@
 {
 	"name": "Preview Color",
 	"identifier": "com.github.mohaka.popclip.extension.color-preview",
-	"description": "Show a swatch of the selected CSS or platform color, with buttons that copy it in other formats.",
+	"description": "Show a swatch of the selected CSS or platform color. Hover it for buttons that copy the color in other formats; Option-click a button to replace the color in place.",
 	"icon": "symbol:paintpalette",
 	"module": "color.js",
 	"entitlements": ["dynamic"],
 	"options": [
-		{ "identifier": "buttonsHeading", "type": "heading", "label": "Copy Buttons" },
-		{ "identifier": "name", "type": "boolean", "label": "Name", "defaultValue": true },
-		{ "identifier": "tailwind", "type": "boolean", "label": "Tailwind", "defaultValue": false },
-		{ "identifier": "hex", "type": "boolean", "label": "Hex", "defaultValue": true },
-		{ "identifier": "rgb", "type": "boolean", "label": "RGB", "defaultValue": true },
-		{ "identifier": "hsl", "type": "boolean", "label": "HSL", "defaultValue": false },
-		{ "identifier": "oklch", "type": "boolean", "label": "OKLCH", "defaultValue": false },
-		{ "identifier": "flutter", "type": "boolean", "label": "Flutter / Compose", "defaultValue": false },
-		{ "identifier": "androidXml", "type": "boolean", "label": "Android XML", "defaultValue": false },
-		{ "identifier": "swiftUI", "type": "boolean", "label": "SwiftUI", "defaultValue": false },
-		{ "identifier": "uiKit", "type": "boolean", "label": "UIKit", "defaultValue": false },
-		{
-			"identifier": "contrast",
-			"type": "boolean",
-			"label": "Contrast",
-			"description": "WCAG ratio against white and black.",
-			"defaultValue": false
-		},
-		{
-			"identifier": "shades",
-			"type": "boolean",
-			"label": "Shades",
-			"description": "Ten lighter and darker swatches of the same hue.",
-			"defaultValue": false
-		},
+		{ "identifier": "webHeading", "type": "heading", "label": "Web Formats" },
+		{ "identifier": "name", "type": "boolean", "label": "Name", "icon": "symbol:textformat", "defaultValue": true },
+		{ "identifier": "tailwind", "type": "boolean", "label": "Tailwind", "icon": "symbol:wind", "defaultValue": false },
+		{ "identifier": "hex", "type": "boolean", "label": "Hex", "icon": "symbol:number", "defaultValue": true },
+		{ "identifier": "rgb", "type": "boolean", "label": "RGB", "icon": "RGB", "defaultValue": true },
+		{ "identifier": "hsl", "type": "boolean", "label": "HSL", "icon": "HSL", "defaultValue": false },
+		{ "identifier": "oklch", "type": "boolean", "label": "OKLCH", "icon": "LCH", "defaultValue": false },
 
-		{ "identifier": "optionsHeading", "type": "heading", "label": "Button Options" },
+		{ "identifier": "appHeading", "type": "heading", "label": "App Formats" },
+		{ "identifier": "flutter", "type": "boolean", "label": "Flutter / Compose", "icon": "symbol:curlybraces", "defaultValue": false },
 		{
-			"identifier": "commaSyntax",
+			"identifier": "androidXml",
 			"type": "boolean",
-			"label": "Comma syntax",
-			"description": "rgb(255, 0, 0) instead of rgb(255 0 0).",
+			"label": "Android XML",
+			"icon": "symbol:chevron.left.forwardslash.chevron.right",
 			"defaultValue": false
 		},
-		{
-			"identifier": "showSelected",
-			"type": "boolean",
-			"label": "Include the selected format",
-			"description": "Off: selecting #ff0000 leaves out the Hex button.",
-			"defaultValue": false
-		},
-		{
-			"identifier": "gamut",
-			"type": "boolean",
-			"label": "Mark colors outside sRGB",
-			"description": "Adds an \"outside sRGB\" button when the swatch can only show the closest color.",
-			"defaultValue": true
-		},
-		{
-			"identifier": "cssNames",
-			"type": "boolean",
-			"label": "Prefer CSS names",
-			"description": "Exact CSS matches use their CSS name, like azure, in the button and tooltip.",
-			"defaultValue": true
-		},
+		{ "identifier": "swiftUI", "type": "boolean", "label": "SwiftUI", "icon": "symbol:swift", "defaultValue": false },
+		{ "identifier": "uiKit", "type": "boolean", "label": "UIKit", "icon": "symbol:iphone", "defaultValue": false },
 
-		{ "identifier": "recognizeHeading", "type": "heading", "label": "Also Recognize" },
+		{ "identifier": "extrasHeading", "type": "heading", "label": "Extras" },
+		{ "identifier": "contrast", "type": "boolean", "label": "Contrast", "icon": "symbol:circle.lefthalf.filled", "defaultValue": false },
+		{ "identifier": "shades", "type": "boolean", "label": "Shades", "icon": "symbol:square.stack", "defaultValue": false },
+
+		{ "identifier": "displayHeading", "type": "heading", "label": "Display" },
 		{
-			"identifier": "cssDeclarations",
-			"type": "boolean",
-			"label": "CSS declarations",
-			"description": "Like color: #00ff00; or --brand: rgb(0, 128, 255);",
-			"defaultValue": false
+			"identifier": "syntax",
+			"type": "multiple",
+			"label": "Syntax",
+			"values": ["modern", "comma"],
+			"valueLabels": ["Modern  rgb(255 0 0)", "Comma  rgb(255, 0, 0)"],
+			"inset": true
 		},
 		{
-			"identifier": "bareHex",
-			"type": "boolean",
-			"label": "Hex without #",
-			"description": "6 or 8 digits only, like 1f9add.",
-			"defaultValue": false
+			"identifier": "names",
+			"type": "multiple",
+			"label": "Names",
+			"values": ["css", "list"],
+			"valueLabels": ["CSS names first", "Color list only"],
+			"inset": true
 		},
-		{
-			"identifier": "bareRgb",
-			"type": "boolean",
-			"label": "RGB without rgb()",
-			"description": "Like 0, 128, 255.",
-			"defaultValue": false
-		},
-		{
-			"identifier": "platformCode",
-			"type": "boolean",
-			"label": "Platform code",
-			"description": "Flutter, Compose, Android, SwiftUI and UIKit colors, like Color(0xFF1F9ADD).",
-			"defaultValue": true
-		},
-		{
-			"identifier": "tailwindClasses",
-			"type": "boolean",
-			"label": "Tailwind classes",
-			"description": "Like sky-500, hover:bg-sky-500/50, bg-[#1f9add] or var(--color-sky-500).",
-			"defaultValue": true
-		},
+		{ "identifier": "showSelected", "type": "boolean", "label": "Repeat the selected format", "defaultValue": false },
+		{ "identifier": "gamut", "type": "boolean", "label": "Mark colors outside sRGB", "defaultValue": true },
+
+		{ "identifier": "recognizeHeading", "type": "heading", "label": "Recognize" },
+		{ "identifier": "cssDeclarations", "type": "boolean", "label": "CSS declarations — color: red;", "defaultValue": false },
+		{ "identifier": "bareHex", "type": "boolean", "label": "Hex without # — 1f9add", "defaultValue": false },
+		{ "identifier": "bareRgb", "type": "boolean", "label": "RGB without rgb() — 0, 128, 255", "defaultValue": false },
+		{ "identifier": "platformCode", "type": "boolean", "label": "Platform code — Color(0xFF1F9ADD)", "defaultValue": true },
+		{ "identifier": "tailwindClasses", "type": "boolean", "label": "Tailwind classes — bg-sky-500", "defaultValue": true },
 		{
 			"identifier": "multiple",
 			"type": "boolean",
 			"label": "Several colors in one selection",
-			"description": "One swatch per color, up to 6. Tip: Option-click a button to replace that color in place.",
+			"description": "One swatch per color, up to 6.",
 			"defaultValue": false
 		}
 	]

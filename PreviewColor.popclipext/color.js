@@ -617,19 +617,19 @@ const closestTailwind = (color) => {
 };
 
 const FORMATS = {
-	name: (color, options) => closestName(color, options.cssNames),
+	name: (color, options) => closestName(color, options.names === "css"),
 	tailwind: closestTailwind,
 	hex: (color) => color.hex,
 	rgb: (color, options) => {
 		const { r, g, b } = color;
-		if (options.commaSyntax) {
+		if (options.syntax === "comma") {
 			return color.a < 1 ? `rgba(${r}, ${g}, ${b}, ${legacyAlpha(color)})` : `rgb(${r}, ${g}, ${b})`;
 		}
 		return `rgb(${r} ${g} ${b}${alphaSuffix(color)})`;
 	},
 	hsl: (color, options) => {
 		const [h, s, l] = toHsl(color);
-		if (options.commaSyntax) {
+		if (options.syntax === "comma") {
 			return color.a < 1 ? `hsla(${h}, ${s}%, ${l}%, ${legacyAlpha(color)})` : `hsl(${h}, ${s}%, ${l}%)`;
 		}
 		return `hsl(${h} ${s}% ${l}%${alphaSuffix(color)})`;
@@ -710,7 +710,7 @@ const shades = (color) =>
 
 const repeatsInput = (format, color, options) =>
 	format === color.format &&
-	(format !== "name" || closestName(color, options.cssNames).toLowerCase().split(" / ").includes(color.input));
+	(format !== "name" || closestName(color, options.names === "css").toLowerCase().split(" / ").includes(color.input));
 
 const copyValue = (format, text) => {
 	if (format === "name" || format === "tailwind") {
@@ -824,7 +824,7 @@ const actions = (input, options) => {
 	const single = parse(input.text, options);
 	const colors = single ? [single] : options.multiple ? findColors(input.text, options) : [];
 	return colors.map((color) => ({
-		title: closestName(color, options.cssNames),
+		title: closestName(color, options.names === "css"),
 		icon: swatch(color),
 		submenu: details(color, options).map((button) => toAction(button, color)),
 	}));

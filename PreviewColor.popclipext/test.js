@@ -165,8 +165,8 @@ optionCases.push(
 	check(`${JSON.stringify(text)} ${JSON.stringify(options)}`, result === expect, result);
 });
 
-const cssDefaults = { ...defaults, cssNames: true };
-const cssNameOnly = { name: true, cssNames: true };
+const cssDefaults = { ...defaults, names: "css" };
+const cssNameOnly = { name: true, names: "css" };
 const cssNameCases = new Map([
 	["#f0ffff", "azure"],
 	["#008000", "green"],
@@ -195,7 +195,7 @@ optionCases.push(
 	["rebeccapurple", cssDefaults, "#663399  ·  rgb(102 51 153)"],
 	["rgb(240, 255, 255)", cssDefaults, "azure  ·  #f0ffff"],
 	["#1f9add", cssDefaults, "~ Homeworld  ·  rgb(31 154 221)"],
-	["azure", { ...cssDefaults, cssNames: false }, "Vapour  ·  #f0ffff  ·  rgb(240 255 255)"],
+	["azure", { ...cssDefaults, names: "list" }, "Vapour  ·  #f0ffff  ·  rgb(240 255 255)"],
 	["#ff0000", { ...defaults, showSelected: true }, "Red  ·  #ff0000  ·  rgb(255 0 0)"],
 	["#ff0000", { ...defaults, showSelected: false }, "Red  ·  rgb(255 0 0)"],
 	["red", { ...defaults, showSelected: true }, "Red  ·  #ff0000  ·  rgb(255 0 0)"],
@@ -203,8 +203,8 @@ optionCases.push(
 	["hsl(240, 100%, 50%)", { ...defaults, hsl: true, showSelected: true }, "Blue  ·  #0000ff  ·  rgb(0 0 255)  ·  hsl(240 100% 50%)"],
 );
 
-check("css title", test.actions({ text: "#f0ffff" }, { cssNames: true })[0].title === "azure", test.actions({ text: "#f0ffff" }, { cssNames: true })[0].title);
-check("library title", test.actions({ text: "#f0ffff" }, { cssNames: false })[0].title === "Vapour", test.actions({ text: "#f0ffff" }, { cssNames: false })[0].title);
+check("css title", test.actions({ text: "#f0ffff" }, { names: "css" })[0].title === "azure", test.actions({ text: "#f0ffff" }, { names: "css" })[0].title);
+check("library title", test.actions({ text: "#f0ffff" }, { names: "list" })[0].title === "Vapour", test.actions({ text: "#f0ffff" }, { names: "list" })[0].title);
 
 optionCases.forEach(([text, options, expect]) => {
 	const result = describe(test.parse(text), options);
@@ -320,7 +320,7 @@ const commaCases = [
 ];
 
 commaCases.forEach(([text, expect]) => {
-	const result = describe(everyFormat(text), { rgb: true, hsl: true, commaSyntax: true });
+	const result = describe(everyFormat(text), { rgb: true, hsl: true, syntax: "comma" });
 	check(`comma ${JSON.stringify(text)}`, result === expect, result);
 });
 check("comma parses back", test.parse("rgba(255, 0, 0, 0.5)").hex === "#ff000080", test.parse("rgba(255, 0, 0, 0.5)").hex);
@@ -432,7 +432,7 @@ check("tailwind count", require("./tailwind").length === 288, require("./tailwin
 
 const copyCases = [
 	["#1f9add", { name: true, hex: true, rgb: true }, ["Homeworld", "rgb(31 154 221)"]],
-	["#808080", { name: true, cssNames: true, rgb: true }, ["gray", "rgb(128 128 128)"]],
+	["#808080", { name: true, names: "css", rgb: true }, ["gray", "rgb(128 128 128)"]],
 	["red", { name: true, hex: true }, ["#ff0000"]],
 	["#ff0000", { hex: true }, ["#ff0000"]],
 	["oklch(60% 0.2 250)", { hex: true, gamut: true }, ["#0081f1", undefined]],
