@@ -389,18 +389,18 @@ const parseTailwind = (text) => {
 	return { ...color, a: color.a * clamp(alpha, 0, 1), format: arbitrary ? inputFormat(inner) : "tailwind" };
 };
 
-const toSource = (text, { bareHex = false, bareRgb = false, platformCode = false, tailwindClasses = false } = {}) => {
+const toSource = (text, { hexWithoutHash = false, rgbWithoutFunction = false, platformCode = false, tailwindClasses = false } = {}) => {
 	if (text === "transparent") {
 		return { xyz: [0, 0, 0], a: 0 };
 	}
 	if (text in NAMED_COLORS) {
 		return parseHex(NAMED_COLORS[text]);
 	}
-	const hex = HEX_COLOR.exec(text) || (bareHex ? BARE_HEX_COLOR.exec(text) : null);
+	const hex = HEX_COLOR.exec(text) || (hexWithoutHash ? BARE_HEX_COLOR.exec(text) : null);
 	if (hex) {
 		return parseHex(hex[1]);
 	}
-	const rgb = bareRgb ? BARE_RGB_COLOR.exec(text) : null;
+	const rgb = rgbWithoutFunction ? BARE_RGB_COLOR.exec(text) : null;
 	if (rgb) {
 		return rgb.slice(1).every((v) => parseFloat(v) <= 255) ? parseFunction("rgb", text) : null;
 	}
@@ -617,7 +617,7 @@ const closestTailwind = (color) => {
 };
 
 const FORMATS = {
-	name: (color, options) => closestName(color, options.names === "css"),
+	name: (color, options) => closestName(color, options.nameSource === "css"),
 	tailwind: closestTailwind,
 	hex: (color) => color.hex,
 	rgb: (color, options) => {
@@ -710,7 +710,7 @@ const shades = (color) =>
 
 const repeatsInput = (format, color, options) =>
 	format === color.format &&
-	(format !== "name" || closestName(color, options.names === "css").toLowerCase().split(" / ").includes(color.input));
+	(format !== "name" || closestName(color, options.nameSource === "css").toLowerCase().split(" / ").includes(color.input));
 
 const copyValue = (format, text) => {
 	if (format === "name" || format === "tailwind") {
@@ -725,7 +725,7 @@ const details = (color, options) => {
 		return { title, copy: copyValue(format, title) };
 	};
 	const buttons = Object.keys(FORMATS)
-		.filter((format) => options[format] && (options.showSelected || !repeatsInput(format, color, options)))
+		.filter((format) => options[format] && (options.repeatSelected || !repeatsInput(format, color, options)))
 		.map(button);
 	if (options.contrast) {
 		buttons.push({ title: contrast(color), info: CONTRAST_INFO });
@@ -736,7 +736,7 @@ const details = (color, options) => {
 	if (buttons.length === 0) {
 		buttons.push(button("hex"));
 	}
-	if (color.outOfGamut && options.gamut) {
+	if (color.outOfGamut && options.markOutsideSrgb) {
 		buttons.push({
 			title: "outside sRGB",
 			info: "This color is outside sRGB, so the swatch and values show the closest sRGB color.",
@@ -763,7 +763,7 @@ const TAILWIND_CANDIDATES = [
 ];
 const DECLARED_NAME = /(?:^|[;{\s])-?-?[a-z_][a-z0-9_-]*\s*:\s*([a-z]+)\s*(?:!important\s*)?(?=;|}|$)/gim;
 
-const findColors = (text, options) => {
+const findColors = (text, options, max = MAX_COLORS) => {
 	const scanned = text.slice(0, SCAN_LIMIT);
 	const candidates = [];
 	const patterns = [
@@ -781,12 +781,12 @@ const findColors = (text, options) => {
 	}
 	candidates.sort((a, b) => a[0] - b[0] || b[1].length - a[1].length);
 
-	const singleOptions = { ...options, bareHex: false, bareRgb: false, cssDeclarations: false };
+	const singleOptions = { ...options, hexWithoutHash: false, rgbWithoutFunction: false, cssDeclarations: false };
 	const colors = [];
 	const seen = new Set();
 	let end = 0;
 	for (const [index, candidate] of candidates) {
-		if (index < end || colors.length === MAX_COLORS) {
+		if (index < end || colors.length === max) {
 			continue;
 		}
 		const color = parse(candidate, singleOptions);
@@ -822,9 +822,10 @@ const toAction = (button, color) => {
 
 const actions = (input, options) => {
 	const single = parse(input.text, options);
-	const colors = single ? [single] : options.multiple ? findColors(input.text, options) : [];
+	const limit = Math.min(MAX_COLORS, parseInt(options.findInText, 10) || 0);
+	const colors = single ? [single] : limit > 0 ? findColors(input.text, options, limit) : [];
 	return colors.map((color) => ({
-		title: closestName(color, options.names === "css"),
+		title: closestName(color, options.nameSource === "css"),
 		icon: swatch(color),
 		submenu: details(color, options).map((button) => toAction(button, color)),
 	}));

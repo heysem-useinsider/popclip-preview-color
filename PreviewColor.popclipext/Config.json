@@ -7,7 +7,7 @@
 	"entitlements": ["dynamic"],
 	"options": [
 		{ "identifier": "webHeading", "type": "heading", "label": "Web Formats" },
-		{ "identifier": "name", "type": "boolean", "label": "Name", "icon": "symbol:textformat", "defaultValue": true },
+		{ "identifier": "name", "type": "boolean", "label": "Name (~ for closest match)", "icon": "symbol:textformat", "defaultValue": true },
 		{ "identifier": "tailwind", "type": "boolean", "label": "Tailwind", "icon": "symbol:wind", "defaultValue": false },
 		{ "identifier": "hex", "type": "boolean", "label": "Hex", "icon": "symbol:number", "defaultValue": true },
 		{ "identifier": "rgb", "type": "boolean", "label": "RGB", "icon": "RGB", "defaultValue": true },
@@ -40,28 +40,31 @@
 			"inset": true
 		},
 		{
-			"identifier": "names",
+			"identifier": "nameSource",
 			"type": "multiple",
 			"label": "Names",
 			"values": ["css", "list"],
 			"valueLabels": ["CSS names first", "Color list only"],
 			"inset": true
 		},
-		{ "identifier": "showSelected", "type": "boolean", "label": "Repeat the selected format", "defaultValue": false },
-		{ "identifier": "gamut", "type": "boolean", "label": "Mark colors outside sRGB", "defaultValue": true },
+		{ "identifier": "repeatSelected", "type": "boolean", "label": "Repeat the selected format", "defaultValue": false },
+		{ "identifier": "markOutsideSrgb", "type": "boolean", "label": "Mark colors outside sRGB", "defaultValue": true },
 
 		{ "identifier": "recognizeHeading", "type": "heading", "label": "Recognize" },
-		{ "identifier": "cssDeclarations", "type": "boolean", "label": "CSS declarations — color: red;", "defaultValue": false },
-		{ "identifier": "bareHex", "type": "boolean", "label": "Hex without # — 1f9add", "defaultValue": false },
-		{ "identifier": "bareRgb", "type": "boolean", "label": "RGB without rgb() — 0, 128, 255", "defaultValue": false },
-		{ "identifier": "platformCode", "type": "boolean", "label": "Platform code — Color(0xFF1F9ADD)", "defaultValue": true },
-		{ "identifier": "tailwindClasses", "type": "boolean", "label": "Tailwind classes — bg-sky-500", "defaultValue": true },
 		{
-			"identifier": "multiple",
-			"type": "boolean",
-			"label": "Several colors in one selection",
-			"description": "One swatch per color, up to 6.",
-			"defaultValue": false
-		}
+			"identifier": "findInText",
+			"type": "multiple",
+			"label": "Find in text",
+			"values": ["0", "1", "2", "3", "4", "5", "6"],
+			"valueLabels": ["Exact match only", "1 color", "2 colors", "3 colors", "4 colors", "5 colors", "6 colors"],
+			"description": "Like rgb(31 154 221) inside a longer sentence.",
+			"defaultValue": "2",
+			"inset": true
+		},
+		{ "identifier": "cssDeclarations", "type": "boolean", "label": "CSS declarations — color: red;", "defaultValue": false },
+		{ "identifier": "hexWithoutHash", "type": "boolean", "label": "Hex without # — 1f9add", "defaultValue": true },
+		{ "identifier": "rgbWithoutFunction", "type": "boolean", "label": "RGB without rgb() — 0, 128, 255", "defaultValue": false },
+		{ "identifier": "platformCode", "type": "boolean", "label": "Platform code — Color(0xFF1F9ADD)", "defaultValue": true },
+		{ "identifier": "tailwindClasses", "type": "boolean", "label": "Tailwind classes — bg-sky-500", "defaultValue": true }
 	]
 }

@@ -88,7 +88,7 @@ const check = (label, pass, detail) => {
 	print(`${label} -> ${detail} ${pass ? "OK" : "FAIL"}`);
 };
 
-const allFormats = { hex: true, rgb: true, hsl: true, oklch: true, gamut: true };
+const allFormats = { hex: true, rgb: true, hsl: true, oklch: true, markOutsideSrgb: true };
 const everyFormat = (text) => {
 	const color = test.parse(text);
 	return color && { ...color, format: null };
@@ -101,12 +101,12 @@ describeCases.forEach((expect, text) => {
 });
 
 const optionCases = [
-	["#1f9add", { hex: true, rgb: true, hsl: false, oklch: false, gamut: true }, "rgb(31 154 221)"],
-	["#1f9add", { hex: false, rgb: false, hsl: false, oklch: true, gamut: true }, "oklch(65.5% 0.141 239.8)"],
-	["#1f9add", { hex: false, rgb: false, hsl: false, oklch: false, gamut: false }, "#1f9add"],
-	["oklch(60% 0.2 250)", { hex: true, rgb: false, hsl: false, oklch: false, gamut: true }, "#0081f1  ·  outside sRGB"],
-	["oklch(60% 0.2 250)", { hex: true, rgb: false, hsl: false, oklch: false, gamut: false }, "#0081f1"],
-	["oklch(60% 0.2 250)", { hex: false, rgb: false, hsl: false, oklch: false, gamut: true }, "#0081f1  ·  outside sRGB"],
+	["#1f9add", { hex: true, rgb: true, hsl: false, oklch: false, markOutsideSrgb: true }, "rgb(31 154 221)"],
+	["#1f9add", { hex: false, rgb: false, hsl: false, oklch: true, markOutsideSrgb: true }, "oklch(65.5% 0.141 239.8)"],
+	["#1f9add", { hex: false, rgb: false, hsl: false, oklch: false, markOutsideSrgb: false }, "#1f9add"],
+	["oklch(60% 0.2 250)", { hex: true, rgb: false, hsl: false, oklch: false, markOutsideSrgb: true }, "#0081f1  ·  outside sRGB"],
+	["oklch(60% 0.2 250)", { hex: true, rgb: false, hsl: false, oklch: false, markOutsideSrgb: false }, "#0081f1"],
+	["oklch(60% 0.2 250)", { hex: false, rgb: false, hsl: false, oklch: false, markOutsideSrgb: true }, "#0081f1  ·  outside sRGB"],
 ];
 
 const nameOnly = { name: true };
@@ -132,11 +132,11 @@ nameCases.forEach((expect, text) => {
 });
 
 optionCases.push(
-	["#1f9add", { name: true, hex: true, rgb: true, gamut: true }, "~ Homeworld  ·  rgb(31 154 221)"],
-	["oklch(60% 0.2 250)", { name: true, gamut: true }, "~ Azure  ·  outside sRGB"],
+	["#1f9add", { name: true, hex: true, rgb: true, markOutsideSrgb: true }, "~ Homeworld  ·  rgb(31 154 221)"],
+	["oklch(60% 0.2 250)", { name: true, markOutsideSrgb: true }, "~ Azure  ·  outside sRGB"],
 );
 
-const defaults = { name: true, hex: true, rgb: true, hsl: false, oklch: false, gamut: true };
+const defaults = { name: true, hex: true, rgb: true, hsl: false, oklch: false, markOutsideSrgb: true };
 const everything = { ...allFormats, name: true };
 optionCases.push(
 	["#ff0000", defaults, "Red  ·  rgb(255 0 0)"],
@@ -158,15 +158,15 @@ optionCases.push(
 );
 
 [
-	["1f9add", { ...defaults, bareHex: true }, "~ Homeworld  ·  rgb(31 154 221)"],
-	["0, 128, 255", { ...defaults, bareRgb: true }, "~ Azure  ·  #0080ff"],
+	["1f9add", { ...defaults, hexWithoutHash: true }, "~ Homeworld  ·  rgb(31 154 221)"],
+	["0, 128, 255", { ...defaults, rgbWithoutFunction: true }, "~ Azure  ·  #0080ff"],
 ].forEach(([text, options, expect]) => {
 	const result = describe(test.parse(text, options), options);
 	check(`${JSON.stringify(text)} ${JSON.stringify(options)}`, result === expect, result);
 });
 
-const cssDefaults = { ...defaults, names: "css" };
-const cssNameOnly = { name: true, names: "css" };
+const cssDefaults = { ...defaults, nameSource: "css" };
+const cssNameOnly = { name: true, nameSource: "css" };
 const cssNameCases = new Map([
 	["#f0ffff", "azure"],
 	["#008000", "green"],
@@ -195,16 +195,16 @@ optionCases.push(
 	["rebeccapurple", cssDefaults, "#663399  ·  rgb(102 51 153)"],
 	["rgb(240, 255, 255)", cssDefaults, "azure  ·  #f0ffff"],
 	["#1f9add", cssDefaults, "~ Homeworld  ·  rgb(31 154 221)"],
-	["azure", { ...cssDefaults, names: "list" }, "Vapour  ·  #f0ffff  ·  rgb(240 255 255)"],
-	["#ff0000", { ...defaults, showSelected: true }, "Red  ·  #ff0000  ·  rgb(255 0 0)"],
-	["#ff0000", { ...defaults, showSelected: false }, "Red  ·  rgb(255 0 0)"],
-	["red", { ...defaults, showSelected: true }, "Red  ·  #ff0000  ·  rgb(255 0 0)"],
-	["azure", { ...cssDefaults, showSelected: true }, "azure  ·  #f0ffff  ·  rgb(240 255 255)"],
-	["hsl(240, 100%, 50%)", { ...defaults, hsl: true, showSelected: true }, "Blue  ·  #0000ff  ·  rgb(0 0 255)  ·  hsl(240 100% 50%)"],
+	["azure", { ...cssDefaults, nameSource: "list" }, "Vapour  ·  #f0ffff  ·  rgb(240 255 255)"],
+	["#ff0000", { ...defaults, repeatSelected: true }, "Red  ·  #ff0000  ·  rgb(255 0 0)"],
+	["#ff0000", { ...defaults, repeatSelected: false }, "Red  ·  rgb(255 0 0)"],
+	["red", { ...defaults, repeatSelected: true }, "Red  ·  #ff0000  ·  rgb(255 0 0)"],
+	["azure", { ...cssDefaults, repeatSelected: true }, "azure  ·  #f0ffff  ·  rgb(240 255 255)"],
+	["hsl(240, 100%, 50%)", { ...defaults, hsl: true, repeatSelected: true }, "Blue  ·  #0000ff  ·  rgb(0 0 255)  ·  hsl(240 100% 50%)"],
 );
 
-check("css title", test.actions({ text: "#f0ffff" }, { names: "css" })[0].title === "azure", test.actions({ text: "#f0ffff" }, { names: "css" })[0].title);
-check("library title", test.actions({ text: "#f0ffff" }, { names: "list" })[0].title === "Vapour", test.actions({ text: "#f0ffff" }, { names: "list" })[0].title);
+check("css title", test.actions({ text: "#f0ffff" }, { nameSource: "css" })[0].title === "azure", test.actions({ text: "#f0ffff" }, { nameSource: "css" })[0].title);
+check("library title", test.actions({ text: "#f0ffff" }, { nameSource: "list" })[0].title === "Vapour", test.actions({ text: "#f0ffff" }, { nameSource: "list" })[0].title);
 
 optionCases.forEach(([text, options, expect]) => {
 	const result = describe(test.parse(text), options);
@@ -238,10 +238,10 @@ const bareHexCases = [
 ];
 
 bareHexCases.forEach(([text, bareHex, expect]) => {
-	const result = test.actions({ text }, { bareHex });
+	const result = test.actions({ text }, { hexWithoutHash: bareHex });
 	check(`bareHex=${bareHex} ${JSON.stringify(text)}`, result.length === expect, `${result.length} actions`);
 });
-check("bare hex value", test.parse("1f9add", { bareHex: true }).hex === "#1f9add", test.parse("1f9add", { bareHex: true }).hex);
+check("bare hex value", test.parse("1f9add", { hexWithoutHash: true }).hex === "#1f9add", test.parse("1f9add", { hexWithoutHash: true }).hex);
 
 const bareRgbCases = [
 	["0, 128, 255", false, null],
@@ -261,11 +261,11 @@ const bareRgbCases = [
 ];
 
 bareRgbCases.forEach(([text, bareRgb, expect]) => {
-	const color = test.parse(text, { bareRgb });
+	const color = test.parse(text, { rgbWithoutFunction: bareRgb });
 	const result = color ? color.hex : null;
 	check(`bareRgb=${bareRgb} ${JSON.stringify(text)}`, result === expect, result);
 });
-check("bare rgb action", test.actions({ text: "0, 128, 255" }, { bareRgb: true }).length === 1, "1 action expected");
+check("bare rgb action", test.actions({ text: "0, 128, 255" }, { rgbWithoutFunction: true }).length === 1, "1 action expected");
 
 const namedCount = Object.keys(test.NAMED_COLORS).length;
 check("named colors", namedCount === 148, namedCount);
@@ -299,7 +299,7 @@ declarationCases.forEach(([text, cssDeclarations, expect]) => {
 	check(`declaration=${cssDeclarations} ${JSON.stringify(text)}`, result === expect, result);
 });
 
-check("declaration with bare hex", test.parse("color: 1f9add;", { cssDeclarations: true, bareHex: true }).hex === "#1f9add", "#1f9add expected");
+check("declaration with bare hex", test.parse("color: 1f9add;", { cssDeclarations: true, hexWithoutHash: true }).hex === "#1f9add", "#1f9add expected");
 check(
 	"declaration hides selected format",
 	describe(test.parse("color: #FF0000;", { cssDeclarations: true }), defaults) === "Red  ·  rgb(255 0 0)",
@@ -432,10 +432,10 @@ check("tailwind count", require("./tailwind").length === 288, require("./tailwin
 
 const copyCases = [
 	["#1f9add", { name: true, hex: true, rgb: true }, ["Homeworld", "rgb(31 154 221)"]],
-	["#808080", { name: true, names: "css", rgb: true }, ["gray", "rgb(128 128 128)"]],
+	["#808080", { name: true, nameSource: "css", rgb: true }, ["gray", "rgb(128 128 128)"]],
 	["red", { name: true, hex: true }, ["#ff0000"]],
 	["#ff0000", { hex: true }, ["#ff0000"]],
-	["oklch(60% 0.2 250)", { hex: true, gamut: true }, ["#0081f1", undefined]],
+	["oklch(60% 0.2 250)", { hex: true, markOutsideSrgb: true }, ["#0081f1", undefined]],
 ];
 
 copyCases.forEach(([text, options, expect]) => {
@@ -443,7 +443,7 @@ copyCases.forEach(([text, options, expect]) => {
 	check(`copy ${JSON.stringify(text)}`, JSON.stringify(result) === JSON.stringify(expect), JSON.stringify(result));
 });
 
-const [swatchAction] = test.actions({ text: "#1f9add" }, { name: true, hex: true, rgb: true, gamut: true });
+const [swatchAction] = test.actions({ text: "#1f9add" }, { name: true, hex: true, rgb: true, markOutsideSrgb: true });
 check("no own click behavior", swatchAction.code === undefined, typeof swatchAction.code);
 check(
 	"submenu titles",
@@ -460,7 +460,7 @@ globalThis.popclip = {
 	showText: (text) => calls.push(["show", text]),
 };
 swatchAction.submenu.forEach((button) => button.code());
-test.actions({ text: "oklch(60% 0.2 250)" }, { hex: true, gamut: true })[0].submenu[1].code();
+test.actions({ text: "oklch(60% 0.2 250)" }, { hex: true, markOutsideSrgb: true })[0].submenu[1].code();
 globalThis.popclip = realPopclip;
 check(
 	"button clicks",
@@ -483,7 +483,7 @@ globalThis.popclip = {
 test.actions({ text: "#1f9add" }, { rgb: true })[0].submenu[0].code();
 test.actions({ text: "  color: #1F9ADD !important;" }, { rgb: true, cssDeclarations: true })[0].submenu[0].code();
 test.actions({ text: "#1f9add" }, { shades: true })[0].submenu[0].submenu[0].code();
-test.actions({ text: "a { color: #f00; background: rgb(0, 128, 255); }" }, { hex: true, multiple: true })[1].submenu[0].code();
+test.actions({ text: "a { color: #f00; background: rgb(0, 128, 255); }" }, { hex: true, findInText: "6" })[1].submenu[0].code();
 test.actions({ text: "#1f9add" }, { contrast: true })[0].submenu[0].code();
 globalThis.popclip = realPopclip;
 check(
@@ -499,7 +499,7 @@ check(
 	JSON.stringify(pasted),
 );
 
-const multiOptions = { multiple: true, platformCode: true };
+const multiOptions = { findInText: "6", platformCode: true };
 const multiCases = [
 	["a { color: #f00; background: rgb(0, 128, 255); border-color: red; }", ["#ff0000", "#0080ff"]],
 	["--brand: oklch(60% 0.2 250); --accent: hsl(0 100% 50% / 50%);", ["#0081f1", "#ff000080"]],
@@ -518,10 +518,10 @@ multiCases.forEach(([text, expect]) => {
 	const hexes = test.findColors(text, multiOptions).map((color) => color.hex);
 	check(`multi ${JSON.stringify(text)}`, JSON.stringify(hexes) === JSON.stringify(expect), JSON.stringify(hexes));
 });
-check("multi off", test.actions({ text: "a { color: #f00; background: #00f; }" }, { multiple: false }).length === 0, "0 actions");
-check("multi actions", test.actions({ text: "a { color: #f00; background: #00f; }" }, { multiple: true, name: true }).map((a) => a.title).join(",") === "Red,Blue", test.actions({ text: "a { color: #f00; background: #00f; }" }, { multiple: true, name: true }).map((a) => a.title).join(","));
-check("single wins over multi", test.actions({ text: "#f00" }, { multiple: true }).length === 1, "1 action");
-const platformOff = test.findColors("x = Color(0xFF1F9ADD) y = #f00", { multiple: true }).map((color) => `${color.hex} ${color.span}`);
+check("multi off", test.actions({ text: "a { color: #f00; background: #00f; }" }, { findInText: "0" }).length === 0, "0 actions");
+check("multi actions", test.actions({ text: "a { color: #f00; background: #00f; }" }, { findInText: "6", name: true }).map((a) => a.title).join(",") === "Red,Blue", test.actions({ text: "a { color: #f00; background: #00f; }" }, { findInText: "6", name: true }).map((a) => a.title).join(","));
+check("single wins over multi", test.actions({ text: "#f00" }, { findInText: "6" }).length === 1, "1 action");
+const platformOff = test.findColors("x = Color(0xFF1F9ADD) y = #f00", { findInText: "6" }).map((color) => `${color.hex} ${color.span}`);
 check("multi platform off", JSON.stringify(platformOff) === JSON.stringify(["#ff0000 26,30"]), JSON.stringify(platformOff));
 check("multi hides each input format", describe(test.findColors("a: #f00; b: rgb(0 0 255)", multiOptions)[1], { hex: true, rgb: true }) === "#0000ff", describe(test.findColors("a: #f00; b: rgb(0 0 255)", multiOptions)[1], { hex: true, rgb: true }));
 
@@ -549,7 +549,7 @@ openCases.forEach(([text, options, expect]) => {
 check("auto-closed flag", test.parse("rgb(0, 128, 255").autoClosed === true && test.parse("rgb(0, 128, 255)").autoClosed === false, "flag set only when closed for you");
 check("auto-closed hides its format", describe(test.parse("rgb(0, 128, 255"), { hex: true, rgb: true }) === "#0080ff", describe(test.parse("rgb(0, 128, 255"), { hex: true, rgb: true }));
 
-const openMulti = test.findColors("a { color: #f00; background: rgb(0, 128, 255", { multiple: true }).map((color) => `${color.hex} ${color.autoClosed}`);
+const openMulti = test.findColors("a { color: #f00; background: rgb(0, 128, 255", { findInText: "6" }).map((color) => `${color.hex} ${color.autoClosed}`);
 check("multi auto-closes the last color", JSON.stringify(openMulti) === JSON.stringify(["#ff0000 false", "#0080ff true"]), JSON.stringify(openMulti));
 
 const openClicks = [];
@@ -620,7 +620,7 @@ check(
 	describe(test.parse("bg-sky-500/50", tailwindOn), { tailwind: true, rgb: true }),
 );
 
-const tailwindMulti = { multiple: true, tailwindClasses: true };
+const tailwindMulti = { findInText: "6", tailwindClasses: true };
 const tailwindMultiCases = [
 	['<div class="bg-sky-500 text-white hover:bg-sky-600/80 p-4">', ["#00a6f4", "#ffffff", "#0084d1cc"]],
 	['className="flex border-x-red-500 ring-[#1f9add] text-lg"', ["#fb2c36", "#1f9add"]],
@@ -634,8 +634,34 @@ tailwindMultiCases.forEach(([text, expect]) => {
 });
 check(
 	"tailwind multi off",
-	JSON.stringify(test.findColors('<div class="bg-sky-500 text-white">', { multiple: true }).map((color) => color.hex)) === "[]",
-	JSON.stringify(test.findColors('<div class="bg-sky-500 text-white">', { multiple: true }).map((color) => color.hex)),
+	JSON.stringify(test.findColors('<div class="bg-sky-500 text-white">', { findInText: "6" }).map((color) => color.hex)) === "[]",
+	JSON.stringify(test.findColors('<div class="bg-sky-500 text-white">', { findInText: "6" }).map((color) => color.hex)),
+);
+
+const insideText = { findInText: "6", platformCode: true, tailwindClasses: true };
+const insideTextCases = [
+	["rld and rgb(31 154 221). Hex i", ["#1f9add"]],
+	["The brand color is #1f9add, right?", ["#1f9add"]],
+	["use Color(0xFF1F9ADD) for the header", ["#1f9add"]],
+	["set it to bg-sky-500 on hover", ["#00a6f4"]],
+	["a tomato colored car", []],
+	["no colors here at all", []],
+];
+insideTextCases.forEach(([text, expect]) => {
+	const hexes = test.actions({ text }, insideText).map((action) => action.icon.match(/fill="(#[0-9a-f]{6})"/)[1]);
+	check(`inside text ${JSON.stringify(text)}`, JSON.stringify(hexes) === JSON.stringify(expect), JSON.stringify(hexes));
+});
+check("inside text off", test.actions({ text: "rld and rgb(31 154 221). Hex i" }, { findInText: "0" }).length === 0, "0 actions");
+
+const fiveColors = "a: #f00; b: #0f0; c: #00f; d: #ff0; e: #0ff";
+[["0", 0], ["1", 1], ["3", 3], ["6", 5], [undefined, 0], ["99", 5]].forEach(([insideText, expect]) => {
+	const count = test.actions({ text: fiveColors }, { findInText: insideText }).length;
+	check(`inside text limit ${insideText}`, count === expect, count);
+});
+check(
+	"limit keeps the first colors",
+	test.actions({ text: fiveColors }, { findInText: "2", hex: true }).map((action) => action.icon.match(/fill="(#[0-9a-f]{6})"/)[1]).join(",") === "#ff0000,#00ff00",
+	test.actions({ text: fiveColors }, { findInText: "2", hex: true }).map((action) => action.icon.match(/fill="(#[0-9a-f]{6})"/)[1]).join(","),
 );
 
 print(`${fail ? "FAILED" : "PASSED"}`);

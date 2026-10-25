@@ -7,7 +7,9 @@ It recognizes:
 - CSS colors: names, `#hex`, `rgb()`, `hsl()`, `hwb()`, `lab()`, `lch()`, `oklab()`, `oklch()` and `color()`, with an optional trailing `;`
 - Platform code: Flutter / Compose `Color(0xFF1F9ADD)` and `Color.fromARGB(…)`, Android `Color.rgb(…)`, SwiftUI `Color(red:green:blue:)`, UIKit / AppKit `UIColor(red:green:blue:alpha:)` and `#colorLiteral(…)`
 - Tailwind: `sky-500`, utility classes like `hover:bg-sky-500/50` or `bg-[#1f9add]`, and `var(--color-sky-500)`
-- Optionally: CSS declarations (`color: #00ff00;`), hex without `#`, bare `0, 128, 255`, and several colors in one selection
+- Colors inside longer text, like `rgb(31 154 221)` in a sentence: 2 swatches by default, up to 6
+- Hex without `#` (6 or 8 digits, like `1f9add`)
+- Optionally: CSS declarations (`color: #00ff00;`) and bare `0, 128, 255`
 
 Buttons can show the closest name, the nearest Tailwind color, hex, RGB, HSL, OKLCH, Flutter / Compose, Android XML, SwiftUI, UIKit, WCAG contrast against white and black, and ten shades of the same hue. Pick them in PopClip's settings for the extension.
 
